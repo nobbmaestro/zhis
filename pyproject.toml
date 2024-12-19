@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "zhis"
+version = "0.0.1-dev1"
+description = "zhis: Command history with a database twist."
+authors = ["Norbert Batiuk <norbert@batiuk.se>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.scripts]
+zhis = "zhis.cli:cli"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+click = "==8.1.8"
+
+[tool.poetry.group.dev.dependencies]
+black = "==24.10.0"
+flake8 = "==7.1.1"
+flake8-pyproject= "==1.2.3"
+isort = "==5.13.2"
+pre-commit = "==4.0.1"
+pylint = "==3.3.2"
+pytype = "==2024.10.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.flake8]
+max-line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.pylint]
+max-line-length = 88
+disable = [
+    'C0114',    # missing-module-docstring
+    'C0115',    # missing-class-docstring
+    'C0116',    # missing-function-docstring
+    'R0902',    # too-many-instance-attributes
+    'R0903',    # too-few-public-methods
+    'R0913',    # (too-many-arguments)
+    'W0511',    # allow TODO, FIXME etc
+]
+
