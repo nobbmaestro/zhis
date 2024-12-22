@@ -4,6 +4,7 @@ import os
 import click
 
 from zhis.core.register import register_command
+from zhis.core.search import get_previous_command
 from zhis.db import database_connection
 from zhis.utils.helpers import get_current_tmux_session
 
@@ -39,6 +40,23 @@ def register(cmd, exit_code, path, tmux_session):
         )
 
 
+@click.command()
+@click.option(
+    "--previous",
+    is_flag=True,
+    help="",
+)
+@click.option(
+    "--tmux-session",
+    default=get_current_tmux_session(),
+    help="tmux session context",
+)
+def search(previous, tmux_session):
+    if previous:
+        with database_connection():
+            click.echo(get_previous_command(tmux_session))
+
+
 @click.group()
 @click.version_option()
 @click.option(
@@ -61,3 +79,4 @@ def cli(log_level):
 
 
 cli.add_command(register)
+cli.add_command(search)
