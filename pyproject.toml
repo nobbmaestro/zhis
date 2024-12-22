@@ -47,5 +47,6 @@ disable = [
     'R0903',    # too-few-public-methods
     'R0913',    # (too-many-arguments)
     'W0511',    # allow TODO, FIXME etc
+    'R0917',    # too-many-positional-arguments
 ]
 
