@@ -78,3 +78,16 @@ class History(BaseModel):
             path_context=path,
             session_context=tmux_session,
         )
+
+    @classmethod
+    def get_previous_command(
+        cls,
+        tmux_session_context: str = "",
+    ) -> "History":
+        query = cls.select().order_by(History.executed_at.desc())
+
+        if tmux_session_context:
+            tmux_session_id = TmuxSession.get_or_none(session=tmux_session_context)
+            query = query.where(cls.session_context == tmux_session_id)
+
+        return query.first()
