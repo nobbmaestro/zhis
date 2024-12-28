@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import Optional
+from typing import Optional, Sequence
 
 from peewee import (
     CharField,
@@ -91,3 +91,20 @@ class History(BaseModel):
             query = query.where(cls.session_context == tmux_session_id)
 
         return query.first()
+
+    @classmethod
+    def query_history(
+        cls,
+        pattern: str = "",
+        tmux_session_context: str = "",
+    ) -> Sequence["History"]:
+        query = cls.select().order_by(cls.executed_at.desc())
+
+        if pattern:
+            query = query.join(CliCommand).where(CliCommand.command ** f"%{pattern}%")
+
+        if tmux_session_context:
+            tmux_session_id = TmuxSession.get_or_none(session=tmux_session_context)
+            query = query.where(cls.session_context == tmux_session_id)
+
+        return list(query)

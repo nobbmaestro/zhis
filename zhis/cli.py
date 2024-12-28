@@ -5,7 +5,16 @@ import click
 
 from zhis.db import database_connection
 from zhis.models import History
+from zhis.ui import ZshHistoryApp
 from zhis.utils.helpers import get_current_tmux_session
+
+
+@click.command(name="gui")
+def run_gui_app():
+    app = ZshHistoryApp()
+    with database_connection():
+        selected = app.run()
+        click.echo(selected)
 
 
 @click.command()
@@ -57,7 +66,7 @@ def search(previous, tmux_session):
             click.echo(prev_command.command.command if prev_command else "")
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.version_option()
 @click.option(
     "--log-level",
@@ -67,16 +76,18 @@ def search(previous, tmux_session):
     ),
     default="CRITICAL",
 )
-def cli(log_level):
+@click.pass_context
+def cli(ctx, log_level):
     logging.basicConfig(
         level=logging.getLevelName(log_level),
         format="[%(levelname)s] %(asctime)s %(module)s:%(lineno)d - %(message)s",
         datefmt="%H:%M:%S",
     )
 
-    with database_connection():
-        pass
+    if ctx.invoked_subcommand is None:
+        run_gui_app()
 
 
 cli.add_command(register)
 cli.add_command(search)
+cli.add_command(run_gui_app)
