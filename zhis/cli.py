@@ -4,6 +4,7 @@ import sys
 
 import click
 
+from zhis.config import load_config
 from zhis.db import database_connection
 from zhis.models import CliCommand, History
 from zhis.ui import ZshHistoryApp
@@ -39,19 +40,22 @@ def run_gui_app():
     default=get_current_tmux_session(),
     help="tmux session context",
 )
-def register(cmd, exit_code, path, tmux_session):
+@click.pass_context
+def register(ctx, cmd, exit_code, path, tmux_session):
     with database_connection():
         return History.register_command(
             command=" ".join(cmd),
             exit_code=exit_code,
             path_context=path,
             session_context=tmux_session,
+            exclude_commands=ctx.obj.database.exclude_commands,
         )
 
 
 @click.command(name="import")
 @click.argument("filename")
-def import_histfile(filename):
+@click.pass_context
+def import_histfile(ctx, filename):
     if not os.path.isfile(filename):
         click.echo("File does not exist")
         sys.exit(1)
@@ -73,6 +77,7 @@ def import_histfile(filename):
             if CliCommand.get_or_none(command=command) is None:
                 History.register_command(
                     command=command,
+                    exclude_commands=ctx.obj.database.exclude_commands,
                 )
 
 
@@ -111,6 +116,8 @@ def cli(ctx, log_level):
         format="[%(levelname)s] %(asctime)s %(module)s:%(lineno)d - %(message)s",
         datefmt="%H:%M:%S",
     )
+
+    ctx.obj = load_config()
 
     if ctx.invoked_subcommand is None:
         run_gui_app()
