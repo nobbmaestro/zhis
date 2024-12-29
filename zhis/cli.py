@@ -1,67 +1,38 @@
+import argparse
 import logging
 import os
 import sys
 
-import click
-
-from zhis.config import load_config
+from zhis.__version__ import __version__
+from zhis.config import Config, load_config
 from zhis.db import database_connection
 from zhis.models import CliCommand, History
-from zhis.ui import ZshHistoryApp
+from zhis.ui.ui import ZshHistoryApp
 from zhis.utils.helpers import get_current_tmux_session
 
 
-@click.command(name="gui")
-def run_gui_app():
+def on_run_app_ui():
     app = ZshHistoryApp()
-    with database_connection():
-        selected = app.run()
-        click.echo(selected)
+    return app.run()
 
 
-@click.command()
-@click.argument(
-    "CMD",
-    type=str,
-    nargs=-1,
-)
-@click.option(
-    "--exit-code",
-    default=None,
-    help="command entry to register",
-)
-@click.option(
-    "--path",
-    default=os.getcwd(),
-    help="working directory context",
-)
-@click.option(
-    "--tmux-session",
-    default=get_current_tmux_session(),
-    help="tmux session context",
-)
-@click.pass_context
-def register(ctx, cmd, exit_code, path, tmux_session):
-    with database_connection():
-        return History.register_command(
-            command=" ".join(cmd),
-            exit_code=exit_code,
-            path_context=path,
-            session_context=tmux_session,
-            exclude_commands=ctx.obj.database.exclude_commands,
-        )
+def on_register_command(args, config: Config):
+    return History.register_command(
+        command=" ".join(args.cmd),
+        exit_code=args.exit_code,
+        path_context=args.path,
+        session_context=args.tmux_session,
+        exclude_commands=config.database.exclude_commands,
+    )
 
 
-@click.command(name="import")
-@click.argument("filename")
-@click.pass_context
-def import_histfile(ctx, filename):
-    if not os.path.isfile(filename):
-        click.echo("File does not exist")
+def on_import_from_histfile_command(args, config: Config):
+    if not os.path.isfile(args.filename):
+        print("File does not exist")
         sys.exit(1)
 
     commands = []
-    with open(filename, "r", encoding="utf-8", errors="ignore") as file:
+    with open(args.filename, "r", encoding="utf-8", errors="ignore") as file:
         for line in file:
             command = ""
             if line.startswith(": "):
@@ -72,58 +43,117 @@ def import_histfile(ctx, filename):
             if command:
                 commands.append(command)
 
-    with database_connection():
-        for command in commands:
-            if CliCommand.get_or_none(command=command) is None:
-                History.register_command(
-                    command=command,
-                    exclude_commands=ctx.obj.database.exclude_commands,
-                )
+    for command in commands:
+        if CliCommand.get_or_none(command=command) is None:
+            History.register_command(
+                command=command,
+                exclude_commands=config.database.exclude_commands,
+            )
 
 
-@click.command()
-@click.option(
-    "--previous",
-    is_flag=True,
-    help="",
-)
-@click.option(
-    "--tmux-session",
-    default=get_current_tmux_session(),
-    help="tmux session context",
-)
-def search(previous, tmux_session):
-    if previous:
-        with database_connection():
-            prev_command = History.get_previous_command(tmux_session)
-            click.echo(prev_command.command.command if prev_command else "")
+def on_search_command(args, config: Config):  # pylint: disable=unused-argument
+    if args.previous:
+        prev_command = History.get_previous_command(args.tmux_session)
+        print(prev_command.command.command if prev_command else "")
 
 
-@click.group(invoke_without_command=True)
-@click.version_option()
-@click.option(
-    "--log-level",
-    type=click.Choice(
-        ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        case_sensitive=True,
-    ),
-    default="CRITICAL",
-)
-@click.pass_context
-def cli(ctx, log_level):
+def main():
+    # Base parser to share common options like verbose
+    base_parser = argparse.ArgumentParser(add_help=False)
+    base_parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="run in verbose mode",
+    )
+
+    # Main parser
+    argparser = argparse.ArgumentParser(
+        parents=[base_parser],
+        description="Zsh History CLI",
+    )
+    argparser.add_argument(
+        "--version",
+        action="version",
+        version=f"zhis {__version__}",
+    )
+
+    subparsers = argparser.add_subparsers(
+        dest="command",
+        required=False,
+        title="commands",
+    )
+
+    # Register subcommand
+    register_parser = subparsers.add_parser(
+        "register",
+        parents=[base_parser],
+        help="Register a new command",
+    )
+    register_parser.add_argument(
+        "cmd",
+        nargs="*",
+        help="Command to register",
+    )
+    register_parser.add_argument(
+        "--exit-code",
+        type=int,
+        default=None,
+        help="Exit code for the command",
+    )
+    register_parser.add_argument(
+        "--path",
+        default=os.getcwd(),
+        help="Working directory context",
+    )
+    register_parser.add_argument(
+        "--tmux-session",
+        default=get_current_tmux_session(),
+        help="Tmux session context",
+    )
+    register_parser.set_defaults(func=on_register_command)
+
+    # Import subcommand
+    import_parser = subparsers.add_parser(
+        "import",
+        parents=[base_parser],
+        help="Import history file",
+    )
+    import_parser.add_argument(
+        "filename",
+        help="File to import",
+    )
+    import_parser.set_defaults(func=on_import_from_histfile_command)
+
+    # Search subcommand
+    search_parser = subparsers.add_parser(
+        "search",
+        parents=[base_parser],
+        help="Search history",
+    )
+    search_parser.add_argument(
+        "--previous",
+        action="store_true",
+        help="Retrieve the previous command",
+    )
+    search_parser.add_argument(
+        "--tmux-session",
+        default=get_current_tmux_session(),
+        help="Tmux session context",
+    )
+    search_parser.set_defaults(func=on_search_command)
+
+    args = argparser.parse_args()
+
     logging.basicConfig(
-        level=logging.getLevelName(log_level),
+        level=logging.getLevelName(logging.INFO if args.verbose else logging.CRITICAL),
         format="[%(levelname)s] %(asctime)s %(module)s:%(lineno)d - %(message)s",
         datefmt="%H:%M:%S",
     )
+    config = load_config()
 
-    ctx.obj = load_config()
-
-    if ctx.invoked_subcommand is None:
-        run_gui_app()
-
-
-cli.add_command(register)
-cli.add_command(search)
-cli.add_command(import_histfile)
-cli.add_command(run_gui_app)
+    with database_connection():
+        if args.command is None:
+            on_run_app_ui()
+        else:
+            args.func(args, config)

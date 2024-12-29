@@ -7,11 +7,10 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.scripts]
-zhis = "zhis.cli:cli"
+zhis = "zhis.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-click = "==8.1.8"
 peewee = "==3.17.8"
 marshmallow-dataclass = "==8.7.1"
 textual = "==1.0.0"
