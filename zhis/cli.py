@@ -1,10 +1,11 @@
 import logging
 import os
+import sys
 
 import click
 
 from zhis.db import database_connection
-from zhis.models import History
+from zhis.models import CliCommand, History
 from zhis.ui import ZshHistoryApp
 from zhis.utils.helpers import get_current_tmux_session
 
@@ -46,6 +47,33 @@ def register(cmd, exit_code, path, tmux_session):
             path_context=path,
             session_context=tmux_session,
         )
+
+
+@click.command(name="import")
+@click.argument("filename")
+def import_histfile(filename):
+    if not os.path.isfile(filename):
+        click.echo("File does not exist")
+        sys.exit(1)
+
+    commands = []
+    with open(filename, "r", encoding="utf-8", errors="ignore") as file:
+        for line in file:
+            command = ""
+            if line.startswith(": "):
+                command = line.strip("\n").split(";")[-1]
+            else:
+                command = line.strip("\n")
+
+            if command:
+                commands.append(command)
+
+    with database_connection():
+        for command in commands:
+            if CliCommand.get_or_none(command=command) is None:
+                History.register_command(
+                    command=command,
+                )
 
 
 @click.command()
@@ -90,4 +118,5 @@ def cli(ctx, log_level):
 
 cli.add_command(register)
 cli.add_command(search)
+cli.add_command(import_histfile)
 cli.add_command(run_gui_app)
