@@ -101,3 +101,16 @@ class History(BaseModel):
             query = query.where(cls.exit_code == exit_code)
 
         return query
+
+    @classmethod
+    def get_previous_command(
+        cls,
+        tmux_session_context: Optional[str] = None,
+        path_context: Optional[str] = None,
+        exit_code: Optional[int] = None,
+    ) -> "History":
+        return cls.query_history(
+            tmux_session_context=tmux_session_context,
+            path_context=path_context,
+            exit_code=exit_code,
+        ).first()  # type: ignore

@@ -53,22 +53,6 @@ def history_add_command(
 
 @history_command.command("list", help="List all items in history.")
 @click.option(
-    "-s",
-    "--tmux-session",
-    help="Filter search results by tmux session.",
-)
-@click.option(
-    "-e",
-    "--exit-code",
-    type=int,
-    help="Filter search results by exit code.",
-)
-@click.option(
-    "-c",
-    "--cwd",
-    help="Filter search results by directory.",
-)
-@click.option(
     "-u",
     "--unique",
     is_flag=True,
@@ -91,3 +75,36 @@ def history_list_command(
         query = query.select(History.command).distinct() if unique else query
         for cmd in query:
             click.echo(cmd.command)
+
+
+@history_command.command("last", help="Show last command and exit.")
+@click.option(
+    "-s",
+    "--tmux-session",
+    help="Filter search results by tmux session.",
+)
+@click.option(
+    "-e",
+    "--exit-code",
+    type=int,
+    help="Filter search results by exit code.",
+)
+@click.option(
+    "-c",
+    "--cwd",
+    help="Filter search results by directory.",
+)
+@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
+def history_last_command(
+    tmux_session: str,
+    cwd: str,
+    exit_code: int,
+    verbose: bool,  # pylint: disable=unused-argument
+):
+    with database_connection():
+        prev_command = History.get_previous_command(
+            tmux_session_context=tmux_session,
+            path_context=cwd,
+            exit_code=exit_code,
+        )
+        click.echo(prev_command.command if prev_command else "")
