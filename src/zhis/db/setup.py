@@ -4,7 +4,7 @@ from typing import Iterable, Optional, Type
 
 from peewee import Model, SqliteDatabase
 
-from zhis.db import History, Path, TmuxSession
+from .models import History, Path, TmuxSession
 
 db = SqliteDatabase(os.path.expanduser("~/.zsh_history.db"))
 
