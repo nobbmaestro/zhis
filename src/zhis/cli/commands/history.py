@@ -49,3 +49,45 @@ def history_add_command(
             path_context=cwd,
             exit_code=exit_code,
         )
+
+
+@history_command.command("list", help="List all items in history.")
+@click.option(
+    "-s",
+    "--tmux-session",
+    help="Filter search results by tmux session.",
+)
+@click.option(
+    "-e",
+    "--exit-code",
+    type=int,
+    help="Filter search results by exit code.",
+)
+@click.option(
+    "-c",
+    "--cwd",
+    help="Filter search results by directory.",
+)
+@click.option(
+    "-u",
+    "--unique",
+    is_flag=True,
+    help="Filter search results by uniqueness.",
+)
+@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
+def history_list_command(
+    tmux_session: str,
+    cwd: str,
+    exit_code: int,
+    unique: bool,
+    verbose: bool,  # pylint: disable=unused-argument
+):
+    with database_connection():
+        query = History.query_history(
+            tmux_session_context=tmux_session,
+            path_context=cwd,
+            exit_code=exit_code,
+        )
+        query = query.select(History.command).distinct() if unique else query
+        for cmd in query:
+            click.echo(cmd.command)

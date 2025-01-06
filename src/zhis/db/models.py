@@ -10,6 +10,7 @@ from peewee import (
     ForeignKeyField,
     IntegerField,
     Model,
+    ModelSelect,
 )
 
 db_proxy = DatabaseProxy()
@@ -75,3 +76,28 @@ class History(BaseModel):
             path_context=path,
             session_context=tmux_session,
         )
+
+    @classmethod
+    def query_history(
+        cls,
+        pattern: str = "",
+        tmux_session_context: Optional[str] = None,
+        path_context: Optional[str] = None,
+        exit_code: Optional[int] = None,
+    ) -> ModelSelect:
+        query = cls.select().order_by(cls.executed_at.desc())
+
+        query = query.where(History.command.contains(pattern))
+
+        if tmux_session_context is not None:
+            tmux_session_id = TmuxSession.get_or_none(session=tmux_session_context)
+            query = query.where(cls.session_context == tmux_session_id)
+
+        if path_context is not None:
+            path_id = Path.get_or_none(path=path_context)
+            query = query.where(cls.path_context == path_id)
+
+        if exit_code is not None:
+            query = query.where(cls.exit_code == exit_code)
+
+        return query
