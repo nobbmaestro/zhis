@@ -2,8 +2,9 @@ from typing import List
 
 import click
 
+from zhis.config import Config
 from zhis.db import History, database_connection
-from zhis.gui import Gui, GuiConfig, SelectedCommandResponse
+from zhis.gui import Gui, SelectedCommandResponse
 
 
 @click.command("search", help="Interactive history search.")
@@ -24,7 +25,9 @@ from zhis.gui import Gui, GuiConfig, SelectedCommandResponse
     "--cwd",
     help="Filter search results by directory.",
 )
+@click.pass_obj
 def search_command(
+    config: Config,
     keywords: List[str],
     tmux_session: str,
     cwd: str,
@@ -40,8 +43,7 @@ def search_command(
             exit_code=exit_code,
         )
 
-        config = GuiConfig()
-        response = Gui(query, config).run()
+        response = Gui(query, config=config.gui).run()
 
         if isinstance(response, SelectedCommandResponse):
             click.echo(response.command)

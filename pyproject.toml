@@ -18,7 +18,9 @@ zhis = "zhis.main:cli"
 python = "^3.11"
 click = "==8.1.8"
 peewee = "==3.17.8"
+marshmallow-dataclass = "==8.7.1"
 textual = "==1.0.0"
+pyyaml = "^6.0.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "==24.10.0"
