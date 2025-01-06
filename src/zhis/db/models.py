@@ -2,7 +2,8 @@
 
 import datetime
 import logging
-from typing import Optional
+import re
+from typing import Optional, Sequence
 
 from peewee import (
     CharField,
@@ -55,7 +56,13 @@ class History(BaseModel):
         path_context: Optional[str] = None,
         exit_code: Optional[int] = None,
         executed_at: Optional[datetime.datetime] = None,
+        exclude_commands: Optional[Sequence[str]] = None,
     ):
+        exclude_commands = exclude_commands or []
+        if any(re.search(pattern, command) for pattern in exclude_commands):
+            logging.info("Command disallowed: %s", command)
+            return
+
         executed_at = executed_at or datetime.datetime.now()
 
         tmux_session = TmuxSession.get_instance(

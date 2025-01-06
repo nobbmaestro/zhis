@@ -3,6 +3,7 @@ from typing import List
 
 import click
 
+from zhis.config import Config
 from zhis.db import History, database_connection
 from zhis.utils.helpers import get_current_tmux_session
 
@@ -35,6 +36,7 @@ def history_command():
 )
 @click.pass_obj
 def history_add_command(
+    config: Config,
     cmd: List[str],
     tmux_session: str,
     cwd: str,
@@ -47,6 +49,7 @@ def history_add_command(
             tmux_session_context=tmux_session,
             path_context=cwd,
             exit_code=exit_code,
+            exclude_commands=config.db.exclude_commands,
         )
 
 

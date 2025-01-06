@@ -7,6 +7,7 @@ import marshmallow_dataclass
 import yaml
 from marshmallow import EXCLUDE
 
+from zhis.db.types import DbConfig
 from zhis.gui.types import GuiConfig
 
 DEFAULT_USER_CONFIG_PATH = os.path.expanduser("~/.config/zhis/config.yml")
@@ -14,6 +15,7 @@ DEFAULT_USER_CONFIG_PATH = os.path.expanduser("~/.config/zhis/config.yml")
 
 @dataclass
 class Config:
+    db: DbConfig = field(default_factory=DbConfig)
     gui: GuiConfig = field(default_factory=GuiConfig)
 
     class Meta:
