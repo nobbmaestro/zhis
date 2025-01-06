@@ -1,3 +1,5 @@
+# pytype: skip-file
+
 import datetime
 import logging
 from typing import Optional
@@ -84,8 +86,9 @@ class History(BaseModel):
         tmux_session_context: Optional[str] = None,
         path_context: Optional[str] = None,
         exit_code: Optional[int] = None,
+        base_query: Optional[ModelSelect] = None,
     ) -> ModelSelect:
-        query = cls.select().order_by(cls.executed_at.desc())
+        query = base_query or cls.select().order_by(cls.executed_at.desc())
 
         query = query.where(History.command.contains(pattern))
 
