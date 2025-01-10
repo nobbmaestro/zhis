@@ -1,10 +1,15 @@
 [tool.poetry]
 name = "zhis"
-version = "0.0.1-dev1"
+version = "0.0.0"
 description = "zhis: Command history with a database twist."
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 license = "MIT"
 readme = "README.md"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+bump = true
+dirty = true
 
 [tool.poetry.scripts]
 zhis = "zhis.main:cli"
@@ -23,8 +28,8 @@ pylint = "==3.3.2"
 pytype = "==2024.10.11"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.black]
 line-length = 88
