@@ -33,13 +33,12 @@ def history_command():
     default=os.getcwd(),
     help="Working directory context.",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
+@click.pass_obj
 def history_add_command(
     cmd: List[str],
     tmux_session: str,
     cwd: str,
     exit_code: int,
-    verbose: bool,  # pylint: disable=unused-argument
 ):
     with database_connection():
         command = " ".join(cmd)
@@ -58,13 +57,11 @@ def history_add_command(
     is_flag=True,
     help="Filter search results by uniqueness.",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
 def history_list_command(
     tmux_session: str,
     cwd: str,
     exit_code: int,
     unique: bool,
-    verbose: bool,  # pylint: disable=unused-argument
 ):
     with database_connection():
         query = History.query_history(
@@ -94,12 +91,10 @@ def history_list_command(
     "--cwd",
     help="Filter search results by directory.",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
 def history_last_command(
     tmux_session: str,
     cwd: str,
     exit_code: int,
-    verbose: bool,  # pylint: disable=unused-argument
 ):
     with database_connection():
         prev_command = History.get_previous_command(

@@ -24,13 +24,11 @@ from zhis.gui import Gui, GuiConfig, SelectedCommandResponse
     "--cwd",
     help="Filter search results by directory.",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
 def search_command(
     keywords: List[str],
     tmux_session: str,
     cwd: str,
     exit_code: int,
-    verbose: bool,  # pylint: disable=unused-argument
 ):
     with database_connection():
         pattern = " ".join(keywords)

@@ -1,23 +1,15 @@
-import logging
-
 import click
 
 from zhis.cli.commands import history_command, import_command, search_command
-
-
-def configure_logger(verbose: bool):
-    logging.basicConfig(
-        level=logging.DEBUG if verbose else logging.CRITICAL,
-        format="[%(levelname)s] %(asctime)s %(module)s:%(lineno)d - %(message)s",
-        datefmt="%H:%M:%S",
-    )
+from zhis.cli.options import verbose_option
 
 
 @click.group()
-@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
+@verbose_option
 @click.version_option()
-def cli(verbose: bool):
-    configure_logger(verbose)
+@click.pass_context
+def cli(ctx: click.Context):
+    ctx.obj = None
 
 
 cli.add_command(history_command)

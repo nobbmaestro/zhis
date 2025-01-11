@@ -8,11 +8,8 @@ from zhis.db import History, database_connection
 
 @click.command("import", help="Import history from histfile.")
 @click.argument("HISTFILE")
-@click.option("-v", "--verbose", is_flag=True, help="Run in verbose mode.")
-def import_command(
-    histfile: str,
-    verbose: bool,  # pylint: disable=unused-argument
-):
+@click.pass_obj
+def import_command(histfile: str):
     if not os.path.isfile(histfile):
         click.echo("File does not exist")
         sys.exit(1)
