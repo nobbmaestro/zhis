@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from zhis.cli.commands import history_command, import_command
+from zhis.cli.commands import history_command, import_command, search_command
 
 
 def configure_logger(verbose: bool):
@@ -22,3 +22,4 @@ def cli(verbose: bool):
 
 cli.add_command(history_command)
 cli.add_command(import_command)
+cli.add_command(search_command)
