@@ -7,6 +7,13 @@ from zhis.config import Config
 from zhis.db import History, database_connection
 from zhis.utils.helpers import get_current_tmux_session
 
+from ..options.filter import (
+    cwd_filter_option,
+    exit_code_filter_option,
+    tmux_session_filter_option,
+    unique_filter_option,
+)
+
 
 @click.group("history", help="Manipulate history database.")
 def history_command():
@@ -54,12 +61,10 @@ def history_add_command(
 
 
 @history_command.command("list", help="List all items in history.")
-@click.option(
-    "-u",
-    "--unique",
-    is_flag=True,
-    help="Filter search results by uniqueness.",
-)
+@unique_filter_option
+@tmux_session_filter_option
+@exit_code_filter_option
+@cwd_filter_option
 def history_list_command(
     tmux_session: str,
     cwd: str,
@@ -78,22 +83,9 @@ def history_list_command(
 
 
 @history_command.command("last", help="Show last command and exit.")
-@click.option(
-    "-s",
-    "--tmux-session",
-    help="Filter search results by tmux session.",
-)
-@click.option(
-    "-e",
-    "--exit-code",
-    type=int,
-    help="Filter search results by exit code.",
-)
-@click.option(
-    "-c",
-    "--cwd",
-    help="Filter search results by directory.",
-)
+@tmux_session_filter_option
+@exit_code_filter_option
+@cwd_filter_option
 def history_last_command(
     tmux_session: str,
     cwd: str,

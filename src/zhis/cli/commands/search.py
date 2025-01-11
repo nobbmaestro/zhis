@@ -6,25 +6,18 @@ from zhis.config import Config
 from zhis.db import History, database_connection
 from zhis.gui import Gui, SelectedCommandResponse
 
+from ..options.filter import (
+    cwd_filter_option,
+    exit_code_filter_option,
+    tmux_session_filter_option,
+)
+
 
 @click.command("search", help="Interactive history search.")
 @click.argument("KEYWORDS", nargs=-1)
-@click.option(
-    "-s",
-    "--tmux-session",
-    help="Filter search results by tmux session.",
-)
-@click.option(
-    "-e",
-    "--exit-code",
-    type=int,
-    help="Filter search results by exit code.",
-)
-@click.option(
-    "-c",
-    "--cwd",
-    help="Filter search results by directory.",
-)
+@tmux_session_filter_option
+@exit_code_filter_option
+@cwd_filter_option
 @click.pass_obj
 def search_command(
     config: Config,
