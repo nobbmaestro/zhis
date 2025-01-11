@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.scripts]
-zhis = "zhis.cli:cli"
+zhis = "zhis.main:cli"
 
 [tool.poetry.dependencies]
 python = "^3.11"
