@@ -3,6 +3,7 @@ from typing import List
 
 import click
 
+from zhis.__version__ import __version__
 from zhis.config import Config
 from zhis.db import History, database_connection
 from zhis.gui import Gui, SelectedCommandResponse
@@ -40,6 +41,7 @@ def search_command(
         response = Gui(
             config.gui,
             query_callback=partial(History.query_history, base_query=query),
+            version=__version__,
         ).run()
 
         if isinstance(response, SelectedCommandResponse):

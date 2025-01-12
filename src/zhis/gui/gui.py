@@ -4,7 +4,6 @@ import peewee
 from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Input, Static
 
-from zhis.__version__ import __version__
 from zhis.utils.helpers import humanize_timedelta
 
 from .types import Column, GuiConfig, SelectedCommandResponse, UserSelectedEvent
@@ -95,9 +94,11 @@ class Gui(App):
         self,
         config: GuiConfig,
         query_callback: Callable[[str], peewee.ModelSelect],
+        version: str = "",
     ):
         super().__init__()
         self.config = config
+        self.version = version
         self.table = None
         self.pattern = ""
 
@@ -105,7 +106,7 @@ class Gui(App):
         self.update_rows()
 
     def compose(self) -> ComposeResult:
-        yield Static(f"Zhis {__version__}")
+        yield Static(f"Zhis {self.version}")
         yield HistoryDataTable(cursor_type="row")
         yield Input(value=self.pattern, placeholder="Type your command here...")
         yield Footer()
