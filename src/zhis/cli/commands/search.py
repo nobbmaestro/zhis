@@ -1,3 +1,4 @@
+from functools import partial
 from typing import List
 
 import click
@@ -36,7 +37,10 @@ def search_command(
             exit_code=exit_code,
         )
 
-        response = Gui(query, config=config.gui).run()
+        response = Gui(
+            config.gui,
+            query_callback=partial(History.query_history, base_query=query),
+        ).run()
 
         if isinstance(response, SelectedCommandResponse):
             click.echo(response.command)

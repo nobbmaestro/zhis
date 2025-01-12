@@ -5,7 +5,6 @@ from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Input, Static
 
 from zhis.__version__ import __version__
-from zhis.db import History
 from zhis.utils.helpers import humanize_timedelta
 
 from .types import Column, GuiConfig, SelectedCommandResponse, UserSelectedEvent
@@ -94,15 +93,15 @@ class Gui(App):
 
     def __init__(
         self,
-        history: peewee.ModelSelect,
         config: GuiConfig,
+        query_callback: Callable[[str], peewee.ModelSelect],
     ):
         super().__init__()
         self.config = config
-        self.history = history
         self.table = None
         self.pattern = ""
 
+        self.query_callback = query_callback
         self.update_rows()
 
     def compose(self) -> ComposeResult:
@@ -132,10 +131,7 @@ class Gui(App):
 
     def update_rows(self):
         self.rows = format_history_to_data_table(
-            History.query_history(
-                pattern=self.pattern,
-                base_query=self.history,
-            ),
+            self.query_callback(self.pattern),
             self.config.columns,
         )
 
