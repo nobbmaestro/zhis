@@ -23,6 +23,9 @@ def humanize_timedelta(
     timestamp: datetime.datetime,
     baseline=datetime.datetime.now(),
 ):
+    if timestamp is None or baseline is None:
+        return ""
+
     delta = baseline - timestamp
     d_seconds = delta.total_seconds()
 

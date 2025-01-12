@@ -1,18 +1,20 @@
-import enum
+# type: ignore
+
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from typing import Sequence
 
 from marshmallow import EXCLUDE
 from textual.message import Message
 
 
-class Column(enum.Enum):
-    EXIT_CODE = 0
-    EXECUTED_AT = 1
-    EXECUTED_IN = 2
-    TMUX_SESSION = 3
-    COMMAND = 4
-    PATH = 5
+class Column(Enum):
+    EXIT_CODE = auto()
+    EXECUTED_AT = auto()
+    EXECUTED_IN = auto()
+    TMUX_SESSION = auto()
+    COMMAND = auto()
+    PATH = auto()
 
 
 @dataclass
@@ -24,14 +26,10 @@ class GuiConfig:
             Column.COMMAND,
         ]
     )
+    show_columns_header: bool = True
 
     class Meta:
         unknown = EXCLUDE
-
-
-@dataclass
-class UserSelectedEvent(Message):
-    selected_row: int
 
 
 @dataclass

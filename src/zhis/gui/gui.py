@@ -1,12 +1,15 @@
 from typing import Callable, Dict, Optional, Sequence
 
 import peewee
+from textual import on
 from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.widgets import DataTable, Footer, Input, Static
 
 from zhis.utils.helpers import humanize_timedelta
 
-from .types import Column, GuiConfig, SelectedCommandResponse, UserSelectedEvent
+from .types import Column, GuiConfig, SelectedCommandResponse
 
 COLUMN_TO_NAME_MAP: Dict[Column, str] = {
     Column.EXIT_CODE: "Exit",
@@ -21,7 +24,7 @@ COLUMN_TO_NAME_MAP: Dict[Column, str] = {
 COLUMN_TO_FIELD_OBTAIN_MAP: Dict[Column, Callable] = {
     Column.EXIT_CODE: lambda entry: entry.exit_code,
     Column.EXECUTED_AT: lambda entry: humanize_timedelta(entry.executed_at),
-    Column.EXECUTED_IN: lambda entry: humanize_timedelta(entry.executed_in),
+    Column.EXECUTED_IN: lambda entry: entry.executed_in,
     Column.TMUX_SESSION: lambda entry: getattr(entry.session_context, "session", ""),
     Column.COMMAND: lambda entry: entry.command,
     Column.PATH: lambda entry: getattr(entry.path_context, "path", ""),
@@ -45,50 +48,45 @@ def format_history_to_data_table(
     return [header] + rows
 
 
-class HistoryDataTable(DataTable):
+class FocusLockedQueryInput(Input):
     BINDINGS = [
-        ("j", "cursor_down", "Down"),
-        ("k", "cursor_up", "Up"),
-        ("enter", "select_cursor", "Select"),
+        Binding("left", "cursor_left", "Move cursor left", show=False),
+        Binding("right", "cursor_right", "Move cursor right", show=False),
+        Binding("backspace", "delete_left", "Delete character left", show=False),
+        Binding("home,ctrl+a", "home", "Go to start", show=False),
+        Binding("end,ctrl+e", "end", "Go to end", show=False),
+        Binding("delete", "delete_right", "Delete character right", show=False),
+        Binding("ctrl+u", "delete_left_all", "Delete all to the left", show=False),
     ]
 
-    def action_select_cursor(self) -> None:
-        selected_row = self.cursor_row
-        self.post_message(UserSelectedEvent(selected_row=selected_row))
+    @property
+    def locked(self):
+        return True
+
+    def on_focus(self) -> None:
+        if not self.locked:
+            super().on_focus()
+
+    def on_blur(self) -> None:
+        if self.locked:
+            self.focus()
+
+
+class HistoryDataTable(DataTable):
+    BINDINGS = []
 
 
 class Gui(App):
-
     BINDINGS = [
-        ("ctrl+q", "quit", "Quit"),
-        ("ctrl+j", "cursor_down", "Down"),
-        ("ctrl+k", "cursor_up", "Up"),
-        ("?", "keybindings", "keybindings"),
+        Binding("enter", "select_cursor", "Select", show=True, priority=True),
+        Binding("ctrl+q,ctrl+c", "quit", "Quit", show=True, priority=True),
+        Binding("down,ctrl+n", "cursor_down", "Down", show=True),
+        Binding("up,ctrl+p", "cursor_up", "Up", show=True),
     ]
 
-    CSS = """
-    Screen {
-        layout: vertical;
-    }
+    CSS_PATH = "styles/main.tcss"
 
-    Static {
-        height: 2.5%;
-    }
-
-    DataTable {
-        height: 1fr;
-        border: round;
-    }
-
-    Input {
-        max-height: 3;
-        border: round;
-    }
-
-    Footer {
-        height: 2.5%;
-    }
-    """
+    ENABLE_COMMAND_PALETTE = False
 
     def __init__(
         self,
@@ -106,10 +104,14 @@ class Gui(App):
         self.update_rows()
 
     def compose(self) -> ComposeResult:
-        yield Static(f"Zhis {self.version}")
-        yield HistoryDataTable(cursor_type="row")
-        yield Input(value=self.pattern, placeholder="Type your command here...")
-        yield Footer()
+        yield HistoryDataTable(
+            cursor_type="row",
+            show_header=self.config.show_columns_header,
+        )
+        yield FocusLockedQueryInput(value=self.pattern)
+        with Horizontal(classes="footer"):
+            yield Footer(show_command_palette=False)
+            yield Static(f"zhis {self.version}")
 
     def on_mount(self) -> None:
         self.table = self.query_one(DataTable)
@@ -146,7 +148,8 @@ class Gui(App):
             return
         self.table.action_cursor_down()
 
-    def on_input_changed(self, event: Input.Changed):
+    @on(Input.Changed)
+    async def update_table_content(self, event: Input.Changed):
         if self.table is None:
             return
 
@@ -155,8 +158,11 @@ class Gui(App):
             self.update_rows()
             self.update_table()
 
-    async def on_user_selection(self, event: UserSelectedEvent):
+    @on(Input.Submitted)
+    def send_selected_command_and_exit(
+        self, event: Input.Submitted
+    ):  # pylint: disable=unused-argument
         command_idx = self.config.columns.index(Column.COMMAND)
         if self.table:
-            selected_data = self.table.get_row_at(event.selected_row)
+            selected_data = self.table.get_row_at(self.table.cursor_row)
             self.exit(SelectedCommandResponse(command=selected_data[command_idx]))
