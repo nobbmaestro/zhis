@@ -51,6 +51,7 @@ class CustomTheme:
 
 @dataclass
 class GuiConfig:
+    mode: Mode = Mode.FULLSCREEN
     columns: Sequence[Column] = field(
         default_factory=lambda: [
             Column.EXIT_CODE,
