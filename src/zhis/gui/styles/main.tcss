@@ -4,7 +4,7 @@ Screen {
 }
 
 DataTable {
-    border: round $primary;
+    border: round $panel;
     color: $secondary;
     height: 1fr;
     overflow_x: hidden;
@@ -14,7 +14,7 @@ DataTable {
     & > .datatable--cursor,
     & > .datatable--header {
         background: $background;
-        color: $foreground;
+        color: $primary;
     }
 
     & > .datatable--cursor {
@@ -24,7 +24,7 @@ DataTable {
 
 Input {
     background: transparent;
-    border: round $primary;
+    border: round $panel;
     max-height: 3;
 }
 

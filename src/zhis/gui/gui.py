@@ -121,6 +121,10 @@ class Gui(App):
         input_widget = self.query_one(Input)
         self.set_focus(input_widget)
 
+        # Register the theme
+        self.register_theme(self.config.theme.to_theme())
+        self.theme = self.config.theme.name
+
     def update_table(self) -> None:
         if self.table is None:
             return
