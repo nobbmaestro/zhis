@@ -20,6 +20,13 @@ from ..options.filter import (
 @tmux_session_filter_option
 @exit_code_filter_option
 @cwd_filter_option
+@click.option("-i", "--interactive", is_flag=True, help="Open interactive search GUI.")
+@click.option(
+    "-I",
+    "--interactive-inline",
+    is_flag=True,
+    help="Open interactive search GUI in inline mode.",
+)
 @click.pass_obj
 def search_command(
     config: Config,
@@ -27,6 +34,8 @@ def search_command(
     tmux_session: str,
     cwd: str,
     exit_code: int,
+    interactive: bool,
+    interactive_inline: bool,
 ):
     with database_connection():
         pattern = " ".join(keywords)
@@ -38,11 +47,14 @@ def search_command(
             exit_code=exit_code,
         )
 
-        response = Gui(
-            config.gui,
-            query_callback=partial(History.query_history, base_query=query),
-            version=__version__,
-        ).run(inline=config.gui.mode == Mode.INLINE)
+        if interactive or interactive_inline:
+            response = Gui(
+                config.gui,
+                query_callback=partial(History.query_history, base_query=query),
+                version=__version__,
+            ).run(inline=interactive_inline or config.gui.mode == Mode.INLINE)
+        else:
+            response = query
 
         if isinstance(response, SelectedCommandResponse):
             click.echo(response.command)
