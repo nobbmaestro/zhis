@@ -3,6 +3,19 @@ autoload -U add-zsh-hook
 
 zmodload zsh/datetime 2>/dev/null
 
+# If zsh-autosuggestions is installed, configure it to use Zhis's search. If
+# you'd like to override this, then add your config after the $(zhis init zsh)
+# in your .zshrc
+_zsh_autosuggest_strategy_zhis() {
+	suggestion=$(ZHIS_QUERY="$1" zhis search --limit 1)
+}
+
+if [ -n "${ZSH_AUTOSUGGEST_STRATEGY:-}" ]; then
+	ZSH_AUTOSUGGEST_STRATEGY=("zhis" "${ZSH_AUTOSUGGEST_STRATEGY[@]}")
+else
+	ZSH_AUTOSUGGEST_STRATEGY=("zhis")
+fi
+
 ZHIS_HISTORY_ID=""
 
 _zhis_preexec() {
