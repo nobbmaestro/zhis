@@ -93,6 +93,7 @@ class History(BaseModel):
         tmux_session_context: Optional[str] = None,
         path_context: Optional[str] = None,
         exit_code: Optional[int] = None,
+        limit: Optional[int] = None,
         base_query: Optional[ModelSelect] = None,
     ) -> ModelSelect:
         query = base_query or cls.select().order_by(cls.executed_at.desc())
@@ -109,6 +110,9 @@ class History(BaseModel):
 
         if exit_code is not None:
             query = query.where(cls.exit_code == exit_code)
+
+        if limit is not None:
+            query = query.limit(limit)
 
         return query
 

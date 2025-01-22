@@ -2,6 +2,7 @@ from functools import partial
 from typing import List
 
 import click
+from peewee import ModelSelect
 
 from zhis.__version__ import __version__
 from zhis.config import Config
@@ -27,6 +28,12 @@ from ..options.filter import (
     is_flag=True,
     help="Open interactive search GUI in inline mode.",
 )
+@click.option(
+    "--limit",
+    default=None,
+    type=int,
+    help="Limit the number of search results.",
+)
 @click.pass_obj
 def search_command(
     config: Config,
@@ -36,6 +43,7 @@ def search_command(
     exit_code: int,
     interactive: bool,
     interactive_inline: bool,
+    limit: int,
 ):
     with database_connection():
         pattern = " ".join(keywords)
@@ -45,6 +53,7 @@ def search_command(
             tmux_session_context=tmux_session,
             path_context=cwd,
             exit_code=exit_code,
+            limit=limit,
         )
 
         if interactive or interactive_inline:
@@ -57,4 +66,9 @@ def search_command(
             response = query
 
         if isinstance(response, SelectedCommandResponse):
+            click.echo(f"__zhis_accept__:{response.command}")
+        elif isinstance(response, History):
             click.echo(response.command)
+        elif isinstance(response, ModelSelect):
+            for history in list(response):
+                click.echo(history.command)
