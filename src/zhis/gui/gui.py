@@ -5,6 +5,7 @@ from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal
+from textual.coordinate import Coordinate
 from textual.widgets import DataTable, Footer, Input, Static
 
 from zhis.utils.helpers import humanize_duration, humanize_timedelta
@@ -45,7 +46,7 @@ def format_history_to_data_table(
         [action_map[column](entry) for column in columns] for entry in list(history)
     ]
 
-    return [header] + rows
+    return [header] + list(reversed(rows))
 
 
 class FocusLockedQueryInput(Input):
@@ -135,6 +136,11 @@ class Gui(App):
         if self.rows:
             self.table.clear()
             self.table.add_rows(self.rows[1:])
+            self.table.cursor_coordinate = (
+                Coordinate(self.table.row_count - 1, 0)
+                if self.table.row_count
+                else Coordinate(0, 0)
+            )
 
     def update_rows(self):
         self.rows = format_history_to_data_table(
@@ -150,6 +156,8 @@ class Gui(App):
     def action_cursor_down(self):
         if self.table is None:
             return
+        if self.table.cursor_coordinate.row == self.table.row_count - 1:
+            self.exit()
         self.table.action_cursor_down()
 
     @on(Input.Changed)

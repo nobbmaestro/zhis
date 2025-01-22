@@ -17,6 +17,7 @@ else
 fi
 
 ZHIS_HISTORY_ID=""
+# ZHIS_HISTORY_OFFSET=""
 
 _zhis_preexec() {
 	local id
@@ -50,7 +51,7 @@ _zhis_search() {
 	zle -I
 
 	local output
-	output=$(ZHIS_QUERY=$BUFFER zhis search $* -i </dev/tty)
+	output=$(ZHIS_QUERY=$BUFFER zhis search $* "$@" </dev/tty)
 
 	zle reset-prompt
 
@@ -65,10 +66,25 @@ _zhis_search() {
 	fi
 }
 _zhis_search_vicmd() {
-	_zhis_search
+	_zhis_search --interactive
 }
 _zhis_search_viins() {
-	_zhis_search
+	_zhis_search --interactive
+}
+
+_zhis_up_search() {
+	# Only trigger if the buffer is a single line
+	if [[ ! $BUFFER == *$'\n'* ]]; then
+		_zhis_search "$@"
+	else
+		zle up-line
+	fi
+}
+_zhis_up_search_vicmd() {
+	_zhis_up_search --interactive-inline
+}
+_zhis_up_search_viins() {
+	_zhis_up_search --interactive-inline
 }
 
 add-zsh-hook preexec _zhis_preexec
@@ -77,7 +93,18 @@ add-zsh-hook precmd _zhis_precmd
 zle -N zhis-search _zhis_search
 zle -N zhis-search-vicmd _zhis_search_vicmd
 zle -N zhis-search-viins _zhis_search_viins
+zle -N zhis-up-search _zhis_up_search
+zle -N zhis-up-search-vicmd _zhis_up_search_vicmd
+zle -N zhis-up-search-viins _zhis_up_search_viins
 
 bindkey -M emacs '^r' zhis-search
 bindkey -M viins '^r' zhis-search-viins
 bindkey -M vicmd '^r' zhis-search-vicmd
+
+bindkey -M emacs '^[[A' zhis-up-search
+bindkey -M vicmd '^[[A' zhis-up-search-vicmd
+bindkey -M viins '^[[A' zhis-up-search-viins
+bindkey -M emacs '^[OA' zhis-up-search
+bindkey -M vicmd '^[OA' zhis-up-search-vicmd
+bindkey -M viins '^[OA' zhis-up-search-viins
+bindkey -M vicmd 'k' zhis-up-search-vicmd

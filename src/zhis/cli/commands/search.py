@@ -1,5 +1,5 @@
 from functools import partial
-from typing import List
+from typing import List, Optional
 
 import click
 from peewee import ModelSelect
@@ -34,6 +34,12 @@ from ..options.filter import (
     type=int,
     help="Limit the number of search results.",
 )
+@click.option(
+    "--offset",
+    default=None,
+    type=int,
+    help="Offset the number of search results.",
+)
 @click.pass_obj
 def search_command(
     config: Config,
@@ -43,7 +49,8 @@ def search_command(
     exit_code: int,
     interactive: bool,
     interactive_inline: bool,
-    limit: int,
+    limit: Optional[int],
+    offset: Optional[int],
 ):
     with database_connection():
         pattern = " ".join(keywords)
@@ -54,6 +61,7 @@ def search_command(
             path_context=cwd,
             exit_code=exit_code,
             limit=limit,
+            offset=offset,
         )
 
         if interactive or interactive_inline:

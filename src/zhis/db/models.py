@@ -128,6 +128,7 @@ class History(BaseModel):
         path_context: Optional[str] = None,
         exit_code: Optional[int] = None,
         limit: Optional[int] = None,
+        offset: Optional[int] = None,
         base_query: Optional[ModelSelect] = None,
     ) -> ModelSelect:
         query = base_query or cls.select().order_by(cls.executed_at.desc())
@@ -147,6 +148,9 @@ class History(BaseModel):
 
         if limit is not None:
             query = query.limit(limit)
+
+        if offset is not None:
+            query = query.offset(offset)
 
         return query
 
