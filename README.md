@@ -45,7 +45,7 @@ make
 ## Configure zsh
 
 ```sh
-TODO: Add zsh configuration
+echo 'eval "$(zhis init zsh)"' >> ~/.zshrc
 ```
 
 ## Feature Roadmap
