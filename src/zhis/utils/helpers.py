@@ -43,3 +43,24 @@ def humanize_timedelta(
             return f"{int(d_seconds//duration)}{unit} ago"
 
     return "just now"
+
+
+def humanize_duration(duration_us):
+    if duration_us is None:
+        return ""
+
+    units = [
+        ("d", 24 * 60 * 60 * 10**6),
+        ("h", 60 * 60 * 10**6),
+        ("m", 60 * 10**6),
+        ("s", 10**6),
+        ("ms", 10**3),
+        ("µs", 1),
+    ]
+
+    for unit, value in units:
+        if duration_us >= value:
+            result = duration_us / value
+            return f"{result:.1f}{unit}"
+
+    return f"{duration_us}µs"

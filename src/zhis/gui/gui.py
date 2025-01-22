@@ -7,7 +7,7 @@ from textual.binding import Binding
 from textual.containers import Horizontal
 from textual.widgets import DataTable, Footer, Input, Static
 
-from zhis.utils.helpers import humanize_timedelta
+from zhis.utils.helpers import humanize_duration, humanize_timedelta
 
 from .types import Column, GuiConfig, SelectedCommandResponse
 
@@ -24,7 +24,7 @@ COLUMN_TO_NAME_MAP: Dict[Column, str] = {
 COLUMN_TO_FIELD_OBTAIN_MAP: Dict[Column, Callable] = {
     Column.EXIT_CODE: lambda entry: entry.exit_code,
     Column.EXECUTED_AT: lambda entry: humanize_timedelta(entry.executed_at),
-    Column.EXECUTED_IN: lambda entry: entry.executed_in,
+    Column.EXECUTED_IN: lambda entry: humanize_duration(entry.executed_in),
     Column.TMUX_SESSION: lambda entry: getattr(entry.session_context, "session", ""),
     Column.COMMAND: lambda entry: entry.command,
     Column.PATH: lambda entry: getattr(entry.path_context, "path", ""),
