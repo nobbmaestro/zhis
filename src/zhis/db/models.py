@@ -9,6 +9,7 @@ from peewee import (
     CharField,
     DatabaseProxy,
     DateTimeField,
+    DoesNotExist,
     Field,
     ForeignKeyField,
     IntegerField,
@@ -56,12 +57,13 @@ class History(BaseModel):
         path_context: Optional[str] = None,
         exit_code: Optional[int] = None,
         executed_at: Optional[datetime.datetime] = None,
+        executed_in: Optional[int] = None,
         exclude_commands: Optional[Sequence[str]] = None,
-    ):
+    ) -> int:
         exclude_commands = exclude_commands or []
         if any(re.search(pattern, command) for pattern in exclude_commands):
             logging.info("Command disallowed: %s", command)
-            return
+            return -1
 
         executed_at = executed_at or datetime.datetime.now()
 
@@ -78,13 +80,45 @@ class History(BaseModel):
             tmux_session_context,
         )
 
-        cls.create(
+        return cls.create(
             command=command,
             exit_code=exit_code,
             executed_at=executed_at,
+            executed_in=executed_in,
             path_context=path,
             session_context=tmux_session,
         )
+
+    @classmethod
+    def edit_command(
+        cls,
+        command_id: int,
+        executed_at: Optional[datetime.datetime] = None,
+        executed_in: Optional[int] = None,
+        exit_code: Optional[int] = None,
+        path_context: Optional[str] = None,
+        tmux_session_context: Optional[str] = None,
+    ):
+        try:
+            cls.get_by_id(command_id)
+        except DoesNotExist:
+            logging.info("id '%s' does not exist.", command_id)
+            return
+
+        kwargs = {
+            "executed_at": executed_at,
+            "executed_in": executed_in,
+            "exit_code": exit_code,
+            "path_context": Path.get_instance(Path.path, path_context),
+            "session_context": TmuxSession.get_instance(
+                TmuxSession.session, tmux_session_context
+            ),
+        }
+
+        kwargs = {key: value for key, value in kwargs.items() if value is not None}
+
+        if kwargs:
+            cls.set_by_id(command_id, kwargs)
 
     @classmethod
     def query_history(

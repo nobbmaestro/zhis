@@ -3,10 +3,34 @@ autoload -U add-zsh-hook
 
 zmodload zsh/datetime 2>/dev/null
 
+ZHIS_HISTORY_ID=""
+
 _zhis_preexec() {
-	(zhis history add -- "$1")
+	local id
+	id=$(zhis history add --id -- "$1")
+	export ZHIS_HISTORY_ID="$id"
+	__zhis_preexec_time=${EPOCHREALTIME-}
 }
-_zhis_precmd() {}
+
+_zhis_precmd() {
+	local EXIT="$?" __zhis_precmd_time=${EPOCHREALTIME-}
+
+	[[ -z "${ZHIS_HISTORY_ID:-}" ]] && return
+
+	local duration=""
+	if [[ -n $__zhis_preexec_time && -n $__zhis_precmd_time ]]; then
+		printf -v duration %.0f $(((__zhis_precmd_time - __zhis_preexec_time) * 1000000))
+	fi
+
+	(
+		zhis history edit \
+			--exit-code $EXIT \
+			${duration:+--duration=$duration} \
+			-- $ZHIS_HISTORY_ID &
+	) >/dev/null 2>&1
+
+	export ZHIS_HISTORY_ID=""
+}
 
 _zhis_search() {
 	emulate -L zsh

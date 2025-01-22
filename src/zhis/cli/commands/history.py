@@ -41,6 +41,12 @@ def history_command():
     default=os.getcwd(),
     help="Working directory context.",
 )
+@click.option(
+    "--id",
+    "return_id",
+    is_flag=True,
+    help="Return id of the created history entry.",
+)
 @click.pass_obj
 def history_add_command(
     config: Config,
@@ -48,15 +54,64 @@ def history_add_command(
     tmux_session: str,
     cwd: str,
     exit_code: int,
+    return_id: bool,
 ):
     with database_connection():
         command = " ".join(cmd)
-        History.register_command(
+        history_id = History.register_command(
             command=command,
             tmux_session_context=tmux_session,
             path_context=cwd,
             exit_code=exit_code,
             exclude_commands=config.db.exclude_commands,
+        )
+
+    if return_id and history_id != -1:
+        click.echo(history_id)
+
+
+@history_command.command("edit", help="Edit history by ID.")
+@click.argument("CMD_ID", nargs=1)
+@click.option(
+    "-s",
+    "--tmux-session",
+    default=None,
+    help="Tmux session context.",
+)
+@click.option(
+    "-e",
+    "--exit-code",
+    type=int,
+    default=None,
+    help="Exit code for the command.",
+)
+@click.option(
+    "-c",
+    "--cwd",
+    default=None,
+    help="Working directory context.",
+)
+@click.option(
+    "-d",
+    "--duration",
+    default=None,
+    type=int,
+    help="Execution duration of the CMD in micro seconds.",
+)
+def history_edit_command(
+    cmd_id: int,
+    tmux_session: str,
+    cwd: str,
+    exit_code: int,
+    duration: int,
+):
+    with database_connection():
+        History.edit_command(
+            command_id=cmd_id,
+            tmux_session_context=tmux_session,
+            path_context=cwd,
+            exit_code=exit_code,
+            executed_in=duration,
         )
 
 
