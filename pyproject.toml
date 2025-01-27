@@ -6,7 +6,7 @@ authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 license = "MIT"
 readme = "README.md"
 include = [
-    "shell/**"
+    { path = "shell/**", format = ["sdist", "wheel"] }
 ]
 
 [tool.poetry-dynamic-versioning]
