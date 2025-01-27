@@ -1,0 +1,47 @@
+Screen {
+    background: transparent;
+    min-height: 50%;
+}
+
+DataTable {
+    border: round $panel;
+    color: $secondary;
+    height: 1fr;
+    overflow_x: hidden;
+    scrollbar-color: $accent;
+    scrollbar-size-vertical: 1;
+
+    & > .datatable--cursor,
+    & > .datatable--header {
+        background: $background;
+        color: $primary;
+    }
+
+    & > .datatable--cursor {
+        text-style: bold;
+    }
+}
+
+Input {
+    background: transparent;
+    border: round $panel;
+    max-height: 3;
+}
+
+Footer {
+    background: transparent;
+    width: 50%;
+}
+
+Static {
+    color: $accent;
+    text-style: bold;
+    text-align: right;
+    padding-right: 1;
+    width: 1fr;
+}
+
+.footer {
+    dock: bottom;
+    height: 2.5%;
+}
