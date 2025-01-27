@@ -7,6 +7,9 @@
 
 zhis: Command history with a database twist
 
+> [!IMPORTANT]
+> Due to poor performance (Of course, it's written in Python!) this project will be discontinued and rewritten in Go.
+
 `TODO: Add short demo video`
 
 ## Table of contents
