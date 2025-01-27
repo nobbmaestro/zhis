@@ -2,7 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/zhis)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/zhis/development)](github-last-commit)
-[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/zhis/v0.1.0/development)](githut-commits-since)
+[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/zhis/v0.1.1/development)](githut-commits-since)
 ![License](https://img.shields.io/github/license/nobbmaestro/zhis)
 
 zhis: Command history with a database twist
