@@ -5,6 +5,9 @@ description = "zhis: Command history with a database twist."
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 license = "MIT"
 readme = "README.md"
+include = [
+    "shell/**"
+]
 
 [tool.poetry-dynamic-versioning]
 enable = true
