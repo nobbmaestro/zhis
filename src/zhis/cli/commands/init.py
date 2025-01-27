@@ -1,3 +1,5 @@
+from importlib.resources import files
+
 import click
 
 
@@ -8,6 +10,7 @@ def init_command():
 
 @init_command.command("zsh")
 def init_zsh_command():
-    with open("shell/zhis.zsh", "r", encoding="utf-8") as file:
+    filename = str(files("shell").joinpath("zhis.zsh"))
+    with open(filename, "r", encoding="utf-8") as file:
         for line in file:
             click.echo(line.strip("\n"))
