@@ -17,7 +17,6 @@ else
 fi
 
 ZHIS_HISTORY_ID=""
-# ZHIS_HISTORY_OFFSET=""
 
 _zhis_preexec() {
 	local id
